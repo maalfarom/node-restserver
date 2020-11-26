@@ -6,23 +6,26 @@ connection = {
     connectString: "localhost:1521/XE"
 };
 
+let conex;
+
 async function Open(sql, binds, autoCommit) {
-    let conex;
     try {
         conex = await oracledb.getConnection(connection);
         result = await conex.execute(sql, binds, { autoCommit });
     } catch (err) {
         console.error(err);
-    } finally {
-        if (conex) {
-            try {
-                await conex.close();
-            } catch (err) {
-                console.error(err);
-            }
-        }
     }
     return result;
 }
 
+function doRelease() {
+    conex.close(
+        function(err) {
+            if (err)
+                console.error(err.message);
+        });
+    console.log(`db released successfully`);
+}
+
 exports.Open = Open;
+exports.doRelease = doRelease;
