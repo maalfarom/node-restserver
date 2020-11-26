@@ -56,7 +56,7 @@ app.put('/reserva', async(req, res) => {
 
 });
 
-app.get('/reserva/serviciosExtras', async(req, res) => {
+app.post('/reserva/serviciosExtras', async(req, res) => {
     console.log('GET SERVICIOS EXTRAS');
 
     const sql = `SELECT  dep.id_departamento,

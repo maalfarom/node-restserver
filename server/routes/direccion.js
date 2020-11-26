@@ -3,7 +3,7 @@ let app = express();
 
 const con = require('../config/configBD');
 
-app.get('/direccion', async(req, res) => {
+app.post('/direccion', async(req, res) => {
     console.log('GET DIRECCION');
 
     const sql =

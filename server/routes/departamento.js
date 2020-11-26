@@ -4,7 +4,7 @@ let app = express();
 const oracledb = require('oracledb');
 const con = require('../config/configBD');
 
-app.get('/departamentos', async(req, res) => {
+app.post('/departamentos', async(req, res) => {
     console.log('GET DEPARTAMENTOS');
 
     const sql = `BEGIN LEER_DEPARTAMENTOS( :CURSOR_ ); END;`;
@@ -38,7 +38,7 @@ app.get('/departamentos', async(req, res) => {
     res.json(Departamentos);
 });
 
-app.get('/departamento', async(req, res) => {
+app.post('/departamento', async(req, res) => {
     console.log('GET DEPARTAMENTO');
 
     const sql = `BEGIN LEER_DEPARTAMENTO( :id, :CURSOR_ ); END;`;
