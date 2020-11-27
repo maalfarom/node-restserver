@@ -79,4 +79,31 @@ app.post('/departamento', async(req, res) => {
 
 });
 
+app.post('/departamento/comuna', async(req, res) => {
+    console.log('POST DEPARTAMENTO POR COMUNA');
+
+    const sql = 'SELECT * FROM DEPARTAMENTO WHERE ID_COMUNA = :id ';
+
+    const binds = { id: req.body.id };
+
+    const result = await con.Open(sql, binds, false);
+
+    const resultSet = result.rows;
+
+    let lista = [];
+
+    resultSet.map(obj => {
+        let comunaSchema = {
+            'id_comuna': obj[0],
+            'nombre_comuna': obj[1],
+            'id_provincia': obj[2]
+        }
+        lista.push(comunaSchema);
+    });
+
+    con.doRelease();
+
+    res.json(lista);
+});
+
 module.exports = app;

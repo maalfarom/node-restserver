@@ -40,4 +40,88 @@ app.post('/direccion', async(req, res) => {
     res.json(lista);
 });
 
+app.post('/direccion/region', async(req, res) => {
+    console.log('GET REGION');
+
+    const sql = `SELECT * FROM REGION`;
+
+    const result = await con.Open(sql, {}, false);
+
+    const resultSet = result.rows;
+
+    let lista = [];
+
+    resultSet.map(obj => {
+        let direccionSchema = {
+            'id_region': obj[0],
+            'nombre_region': obj[1]
+        }
+        lista.push(direccionSchema);
+    });
+
+    con.doRelease();
+
+    res.json(lista);
+
+});
+
+app.post('/direccion/provincia', async(req, res) => {
+    console.log('POST PROVINCIA BY ID');
+    let step = "0";
+    console.log(req.body);
+
+    const sql = `SELECT * FROM PROVINCIA
+                 WHERE id_region = :id`;
+    step = "1";
+    const binds = { id: req.body.id };
+
+    const result = await con.Open(sql, binds, false);
+    step = "2";
+    const resultSet = result.rows;
+
+    let lista = [];
+
+
+    resultSet.map(obj => {
+        let direccionSchema = {
+            'id_provincia': obj[0],
+            'nombre': obj[1],
+            'id_region': obj[2]
+        }
+        lista.push(direccionSchema);
+    });
+
+    con.doRelease();
+
+    res.json(lista);
+});
+
+app.post('/direccion/comuna', async(req, res) => {
+    console.log('POST COMUN');
+
+    const sql = `SELECT * FROM COMUNA WHERE ID_PROVINCIA = :id`;
+
+    const bind = { id: req.body.id };
+
+    const result = await con.Open(sql, bind, false);
+
+    const resultSet = result.rows;
+
+    let lista = [];
+
+    resultSet.map(obj => {
+        let comunaSchema = {
+            'id_comuna': obj[0],
+            'nombre_comuna': obj[1],
+            'id_provincia': obj[2]
+        }
+        lista.push(comunaSchema);
+    });
+
+    con.doRelease();
+
+    res.json(lista);
+});
+
+
 module.exports = app;
