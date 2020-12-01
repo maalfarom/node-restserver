@@ -40,7 +40,7 @@ app.post('/direccion', async(req, res) => {
     res.json(lista);
 });
 
-app.post('/direccion/region', async(req, res) => {
+app.post('/regiones', async(req, res) => {
     console.log('GET REGION');
 
     const sql = `SELECT * FROM REGION`;
@@ -65,7 +65,7 @@ app.post('/direccion/region', async(req, res) => {
 
 });
 
-app.post('/direccion/provincia', async(req, res) => {
+app.post('/provincias', async(req, res) => {
     console.log('POST PROVINCIA BY ID');
     let step = "0";
     console.log(req.body);
@@ -96,7 +96,7 @@ app.post('/direccion/provincia', async(req, res) => {
     res.json(lista);
 });
 
-app.post('/direccion/comuna', async(req, res) => {
+app.post('/comunas', async(req, res) => {
     console.log('POST COMUN');
 
     const sql = `SELECT * FROM COMUNA WHERE ID_PROVINCIA = :id`;

@@ -94,9 +94,14 @@ app.post('/departamento/comuna', async(req, res) => {
 
     resultSet.map(obj => {
         let comunaSchema = {
-            'id_comuna': obj[0],
-            'nombre_comuna': obj[1],
-            'id_provincia': obj[2]
+            'id_departamento': obj[0],
+            'nombre_departamento': obj[1],
+            'numero_departamento': obj[2],
+            'inventario_departamento': obj[3],
+            'tarifa': obj[4],
+            'nombre_comuna': obj[5],
+            'disponibilidad': obj[6],
+            'direccion': obj[7]
         }
         lista.push(comunaSchema);
     });

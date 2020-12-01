@@ -4,45 +4,52 @@ let app = express();
 const oracledb = require('oracledb');
 const con = require('../config/configBD');
 
-app.post('/reserva', async(req, res) => {
+app.post('/reserva', async (req, res) => {
     console.log('POST RESERVA');
 
-    const { horaLlegada, total, idCliente, idDepartamento, fechaInicio, fechaTermino, acompaniantes, adelanto } = req.body;
+    try {
+        const { horaLlegada, total, idCliente, idDepartamento, fechaInicio, fechaTermino,
+            acompaniantes, adelanto } = req.body;
 
-    if (horaLlegada && total && idCliente && idDepartamento && fechaInicio && fechaTermino && acompaniantes && adelanto) {
+        if (horaLlegada && total && idCliente && idDepartamento && fechaInicio && fechaTermino && acompaniantes && adelanto) {
 
-        const sql = `BEGIN CREAR_RESERVA( :horaLlegada, :total, :idCliente, :idDepartamento, :fechaInicio, :fechaTermino, :acompaniantes, :adelanto, :estado, :checkIn, :checkOut ); END;`;
-        const binds = {
-            horaLlegada: horaLlegada,
-            total: total,
-            idCliente: idCliente,
-            idDepartamento: idDepartamento,
-            fechaInicio: fechaInicio,
-            fechaTermino: fechaTermino,
-            acompaniantes: acompaniantes,
-            adelanto: adelanto,
-            estado: 1,
-            checkIn: null,
-            checkOut: null
+            const sql = `BEGIN CREAR_RESERVA( :horaLlegada, :total, :idCliente, :idDepartamento, :fechaInicio, :fechaTermino, :acompaniantes, :adelanto, :estado, :checkIn, :checkOut ); END;`;
+            const binds = {
+                horaLlegada: horaLlegada,
+                total: total,
+                idCliente: id,
+                idDepartamento: idDepartamento,
+                fechaInicio: fechaInicio,
+                fechaTermino: fechaTermino,
+                acompaniantes: acompaniantes,
+                adelanto: adelanto,
+                estado: 1,
+                checkIn: null,
+                checkOut: null
+            }
+
+            const result = await con.Open(sql, binds, true);
+
+            con.doRelease();
+
+            res.json({
+                ok: true,
+                mesagge: 'Operacion exitosa'
+            });
+
+
+        } else {
+            res.json({
+                ok: false,
+                mesagge: 'Operacion fallida, faltan datos'
+            });
         }
-
-        const result = await con.Open(sql, binds, true);
-
-        con.doRelease();
-
-        res.json({
-            ok: true,
-            mesagge: 'Operacion exitosa'
-        });
-    } else {
-        res.json({
-            ok: false,
-            mesagge: 'Operacion fallida'
-        });
+    } catch (ex) {
+        console.log(`Fallo en: ${ex}`);
     }
 });
 
-app.put('/reserva', async(req, res) => {
+app.put('/reserva', async (req, res) => {
     console.log('PUT RESERVA');
 
     const sql = `UPDATE RESERVA RE SET RE.ESTADO = 0 WHERE RE.ID_RESERVA = :id`;
@@ -56,18 +63,23 @@ app.put('/reserva', async(req, res) => {
 
 });
 
-app.post('/reserva/serviciosExtras', async(req, res) => {
+app.post('/serviciosextras', async (req, res) => {
     console.log('GET SERVICIOS EXTRAS');
 
-    const sql = `SELECT  dep.id_departamento,
-                         se.id_servicio,
-                         se.precio_servicio            
-                 FROM departamento_servicio_detalle dsd
-                 JOIN departamento DEP ON (dsd.id_departamento = dep.id_departamento)
-                 JOIN servicio_extra SE ON (dsd.id_servicio = se.id_servicio)
-                 ORDER BY 1 ASC`;
+    console.log(req.body.id);
 
-    const result = con.Open(sql, {}, false);
+    const sql = `select dsd.id_departamento_servicio,
+                    dsd.id_departamento,
+                    dsd.id_servicio,
+                    se.nombre_servicio,
+                    se.precio_servicio
+                 from departamento_servicio_detalle dsd
+                 inner join servicio_extra se on (dsd.id_servicio = se.id_servicio)
+                 where dsd.id_departamento = :id`;
+
+    const binds = { id: req.body.id }
+
+    const result = await con.Open(sql, binds, false);
 
     const resultSet = result.rows;
 
@@ -75,9 +87,11 @@ app.post('/reserva/serviciosExtras', async(req, res) => {
 
     resultSet.map(obj => {
         let serviciosSchema = {
-            'id_departamento': obj[0],
-            'id_servicio': obj[1],
-            'precio_servicio': obj[2]
+            'id_departamento_servicio': obj[0],
+            'id_departammento': obj[1],
+            'id_servicio': obj[2],
+            'nombre_servicio': obj[3],
+            'precio_servicio': obj[4]
         }
         lista.push(serviciosSchema);
     });
@@ -86,5 +100,19 @@ app.post('/reserva/serviciosExtras', async(req, res) => {
 
     res.json(lista);
 });
+
+const validarFecha = (fecInicio, fecTermino, idDepto) => {
+    try {
+        const sql = `SELECT ID_RESERVA, FECHA_INICIO, FECHA_TERMINO FROM RESERVA WHERE ID_DEPARTAMENTO = :id`;
+
+        const binds = {id: idDepto};
+
+        const result = await con.Open(sql, binds, false);
+
+        
+    } catch (ex) {
+
+    }
+};
 
 module.exports = app;
