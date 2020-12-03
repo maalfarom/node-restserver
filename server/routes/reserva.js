@@ -8,6 +8,8 @@ app.post('/reserva', async (req, res) => {
     try {
         const { horaLlegada, total, idCliente, idDepartamento, fechaInicio, fechaTermino, acompaniantes, adelanto } = req.body;
 
+        console.log(`${horaLlegada} ${total} ${idCliente} ${idDepartamento} ${fechaInicio} ${fechaTermino} ${acompaniantes} ${adelanto} `);
+
         
         if (horaLlegada && total && idCliente && idDepartamento && fechaInicio && fechaTermino && acompaniantes && adelanto) {
 
@@ -120,7 +122,8 @@ const validarFecha = async (fecInicio, fecTermino, idDepto) => {
         FROM reserva
         WHERE (fecha_inicio BETWEEN :fecInicio and :fecTermino
         OR  fecha_termino BETWEEN :fecInicio AND :fecTermino)
-        AND id_departamento = :id`;
+        AND id_departamento = :id
+        AND estado = 1`;
 
         const binds = {
             fecInicio: fecInicio,
@@ -132,10 +135,14 @@ const validarFecha = async (fecInicio, fecTermino, idDepto) => {
 
         const resultSet = await result.rows;
 
-        if (resultSet) {
+        console.log(resultSet);
+
+        if (resultSet.length) {
             con.doRelease();
+            console.log('no puede reservar');
             return false;
         } else {
+            console.log('puede reservar');
             con.doRelease();
             return true;
         }
