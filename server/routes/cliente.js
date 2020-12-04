@@ -68,13 +68,13 @@ const findClientByRut = async(clienteRut) => {
         let idcliente = -1;
 
         if(resultSet.length <= 0){
-            console.log('hola: ',resultSet);
+
         } else{
-            console.log('hola2');
             resultSet.map(id => {
                 idcliente = id[0];
             })        
-            con.doRelease();   
+            con.doRelease();
+            return idcliente
         }       
         return idcliente
     } catch(ex) {

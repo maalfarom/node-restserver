@@ -6,10 +6,9 @@ app.post('/reserva', async (req, res) => {
     console.log('POST RESERVA');
 
     try {
-        const { horaLlegada, total, idCliente, idDepartamento, fechaInicio, fechaTermino, acompaniantes, adelanto } = req.body;
+        const { horaLlegada, total, idCliente, idDepartamento, fechaInicio, fechaTermino, acompaniantes, adelanto, services } = req.body;
 
-        console.log(`${horaLlegada} ${total} ${idCliente} ${idDepartamento} ${fechaInicio} ${fechaTermino} ${acompaniantes} ${adelanto} `);
-
+        console.log(`${horaLlegada} ${total} ${idCliente} ${idDepartamento} ${fechaInicio} ${fechaTermino} ${acompaniantes} ${adelanto} ${services}`);
         
         if (horaLlegada && total && idCliente && idDepartamento && fechaInicio && fechaTermino && acompaniantes && adelanto) {
 
@@ -34,6 +33,12 @@ app.post('/reserva', async (req, res) => {
                 const result = await con.Open(sql, binds, true);
 
                 con.doRelease();
+                let servicesArray = JSON.parse(services);
+
+                if(servicesArray.length > 0) {
+                    let bookingId = await findBookingId(idDepartamento, fechaInicio, fechaTermino);
+                    await extraService(servicesArray, bookingId);
+                }
 
                 res.json({
                     ok: true,
@@ -112,7 +117,7 @@ app.post('/serviciosextras', async (req, res) => {
 app.post('/pruebas', async (req, res) => {
     console.log("POST PRUEBAS");
 
-    validarFecha('01/11/20', '02/11/20', 1);
+    findBookingId(2, '01/09/20', '02/09/20');
 });
 
 const validarFecha = async (fecInicio, fecTermino, idDepto) => {
@@ -151,5 +156,68 @@ const validarFecha = async (fecInicio, fecTermino, idDepto) => {
         console.log('Fallo en la funcion validarFecha: ', ex);
     }
 };
+
+let extraService = async( services,idReserva) => {
+    try {
+
+        services.forEach(async element => {
+            console.log('id del servicio: ', element);
+            
+            const sql = 
+            `INSERT INTO reserva_dep_ser_detalle (ID_DEPARTAMENTO_SERVICIO, ID_RESERVA) VALUES (:services, :idReserva)`;
+            
+            const binds = {
+                services: element,
+                idReserva: idReserva
+            };
+
+            
+            const result = await con.Open(sql, binds, true);
+            
+            con.doRelease();
+        });
+
+    } catch(ex) {
+        console.log('Error en la funcion extraService: ', ex);
+    }
+};
+
+let findBookingId = async(idDepto, fecInicio, fecTermino) => {
+    try {
+        const sql = 
+        `SELECT id_reserva
+        FROM RESERVA
+        WHERE id_departamento = :idDepto
+        AND FECHA_INICIO = :fecInicio
+        AND FECHA_TERMINO = :fecTermino`;
+
+        const binds = {
+            idDepto: idDepto,
+            fecInicio: fecInicio,
+            fecTermino: fecTermino
+        };
+
+        let result = await con.Open(sql, binds, false);
+
+        let resultSet = await result.rows;
+
+        let bookingId = -1;
+
+        if(resultSet.length <= 0) {
+
+        } else {
+            resultSet.map( id => {
+                bookingId = id[0];
+                con.doRelease();
+            });
+            return bookingId;
+        }
+
+        return bookingId;
+
+    } catch( ex ) {
+        console.log('Error funcion findBookingId: ', ex);
+    }
+}
 
 module.exports = app;
